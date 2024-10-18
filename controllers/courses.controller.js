@@ -1,52 +1,53 @@
 const { validationResult } = require("express-validator");
+const Course = require("../models/course.model");
 
-let { courses } = require("../data/courses");
-
-const getAllCourses = (req, res) => {
+const getAllCourses = async (req, res) => {
+  // get all courses from database using Course
+  const courses = await Course.find();
   res.json(courses);
 };
 
-const getCourse = (req, res) => {
-  const courseId = +req.params.courseId;
+const getCourse = async (req, res) => {
+  const course = await Course.findById(req.params.courseId);
 
-  const course = courses.find((course) => course.id === courseId);
   if (!course) {
     return res.status(404).json({ msg: "course not found" });
   }
   res.json(course);
 };
 
-const addCourse = (req, res) => {
+const addCourse = async (req, res) => {
   const erros = validationResult(req);
   if (!erros.isEmpty()) {
     return res.status(400).json(erros.array());
   }
 
-  const course = { id: courses.length + 1, ...req.body };
-  courses.push(course);
+  const newCourse = new Course(req.body);
 
-  res.status(201).json(course);
+  await newCourse.save();
+
+  res.status(201).json(newCourse);
 };
 
-const updateCourse = (req, res) => {
-  const courseId = +req.params.courseId;
-
-  let course = courses.find((course) => course.id === courseId);
-
-  if (!course) {
-    return res.status(404).json({ msg: "course not found" });
+const updateCourse = async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+    const updatedCourse = await Course.updateOne(
+      { _id: courseId },
+      {
+        $set: { ...req.body },
+      }
+    );
+    return res.status(200).json(updatedCourse);
+  } catch (e) {
+    return res.status(400).json({ error: e });
   }
-
-  course = { ...course, ...req.body };
-
-  res.status(200).json(course);
 };
 
-const deleteCourse = (req, res) => {
-  const courseId = +req.params.courseId;
-  courses = courses.filter((course) => course.id !== courseId);
+const deleteCourse = async (req, res) => {
+  const data = await Course.deleteOne({ _id: req.params.courseId });
 
-  res.status(200).json({ success: true });
+  res.status(200).json({ success: true, msg: data });
 };
 
 module.exports = {
