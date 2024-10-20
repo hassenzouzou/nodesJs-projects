@@ -28,7 +28,7 @@ const getCourse = asyncWrapper(async (req, res, next) => {
 });
 
 const addCourse = asyncWrapper(async (req, res, next) => {
-  const erros = validationResult(req);
+  const errors = validationResult(req);
   if (!erros.isEmpty()) {
     const error = appError.create(errors.array(), 400, httpStatusText.FAIL);
     return next(error);
