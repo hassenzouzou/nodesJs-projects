@@ -4,6 +4,7 @@ const httpStatusText = require("../utils/httpStatusText");
 const appError = require("../utils/appError");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const generateJWT = require("../utils/generateJWT");
 
 const getAllUsers = asyncWrapper(async (req, res) => {
   const query = req.query;
@@ -44,10 +45,8 @@ const register = asyncWrapper(async (req, res, next) => {
   });
 
   // generate JWT token
-  const token = await jwt.sign(
-    { email: newUser.email, id: newUser.id },
-    process.env.JWT_SECRET_KEY
-  );
+  const token = await generateJWT({ email: newUser.email, id: newUser.id });
+  newUser.token = token;
 
   await newUser.save();
 
@@ -79,9 +78,11 @@ const login = asyncWrapper(async (req, res, next) => {
   const matchedPassword = await bcrypt.compare(password, user.password);
 
   if (user && matchedPassword) {
+    const token = await generateJWT({ email: user.email, id: user._id });
+
     return res.json({
       status: httpStatusText.SUCCESS,
-      data: { user: "logged in successfully" },
+      data: { token },
     });
   } else {
     const error = appError.create("something wrong", 500, httpStatusText.ERROR);
