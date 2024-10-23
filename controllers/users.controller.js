@@ -21,7 +21,7 @@ const getAllUsers = asyncWrapper(async (req, res) => {
 });
 
 const register = asyncWrapper(async (req, res, next) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
 
   const oldUser = await User.findOne({ email: email });
 
@@ -42,10 +42,15 @@ const register = asyncWrapper(async (req, res, next) => {
     lastName,
     email,
     password: hashedPassword,
+    role,
   });
 
   // generate JWT token
-  const token = await generateJWT({ email: newUser.email, id: newUser.id });
+  const token = await generateJWT({
+    email: newUser.email,
+    id: newUser._id,
+    role: newUser.role,
+  });
   newUser.token = token;
 
   await newUser.save();
@@ -78,7 +83,11 @@ const login = asyncWrapper(async (req, res, next) => {
   const matchedPassword = await bcrypt.compare(password, user.password);
 
   if (user && matchedPassword) {
-    const token = await generateJWT({ email: user.email, id: user._id });
+    const token = await generateJWT({
+      email: user.email,
+      id: user._id,
+      role: user.role,
+    });
 
     return res.json({
       status: httpStatusText.SUCCESS,

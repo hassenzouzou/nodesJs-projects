@@ -2,7 +2,6 @@ const { validationResult } = require("express-validator");
 const Course = require("../models/course.model");
 const httpStatusText = require("../utils/httpStatusText");
 const asyncWrapper = require("../middlewares/asyncWrapper");
-const AppError = require("../utils/appError");
 const appError = require("../utils/appError");
 
 const getAllCourses = asyncWrapper(async (req, res) => {
