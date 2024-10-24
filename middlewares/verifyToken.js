@@ -6,7 +6,7 @@ const verifyToken = (req, res, next) => {
   const authHeader =
     req.headers["Authorization"] || req.headers["authorization"];
   if (!authHeader) {
-    const error = appError.create(
+    const error = AppError.create(
       "token is required",
       401,
       httpStatusText.ERROR
@@ -20,7 +20,7 @@ const verifyToken = (req, res, next) => {
     req.currentUser = currentUser;
     next();
   } catch (err) {
-    const error = appError.create("invalid token", 401, httpStatusText.ERROR);
+    const error = AppError.create("invalid token", 401, httpStatusText.ERROR);
     return next(error);
   }
 };
